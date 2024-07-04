@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/releases/' }
+    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url = 'https://m2.dv8tion.net/releases' }
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    implementation 'net.dv8tion:JDA:5.0.0-alpha.9'
+    implementation 'org.jetbrains:annotations:23.0.0'
+    implementation 'org.yaml:snakeyaml:1.30'
+    compileOnly 'org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT'
+    compileOnly 'net.dv8tion:JDA:4.3.0_277'
+    compileOnly 'net.luckperms:api:5.3'
+}
+
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.filter { it.name.endsWith('jar') }.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    exclude '**/*.pom', '**/*.xml', '**/*.properties'
+}
+
+
