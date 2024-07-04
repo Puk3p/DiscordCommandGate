@@ -18,31 +18,45 @@ The DiscordConfirm plugin integrates Minecraft with Discord to enhance security 
 ⚪ Player Restriction: Players who have commands pending confirmation are temporarily restricted from performing certain actions in the game, like moving or executing other commands, which is configurable.
 
 **Installation**
-  1. Prerequisites:
 
-Minecraft server (Spigot, Bukkit, or any compatible fork)
-JDA (Java Discord API) library
-LuckPerms plugin installed
-Setup:
+  **1. Prerequisites:**
 
-Place the DiscordConfirm.jar file in your server's plugins directory.
-Restart the server or load the plugin dynamically.
-Configuration:
+    ➼ Minecraft server (Spigot, Bukkit, or any compatible fork)
+    ➼ JDA (Java Discord API) library
+    ➼ LuckPerms plugin installed
 
-Configure the config.yml file with your Discord bot token and channel ID where confirmation requests will be sent.
-Update the mapping of Minecraft usernames to Discord IDs according to your server's user base.
-Usage
-Commands:
-/grosu: Example command that requires confirmation via Discord. You can modify the plugin to include more commands based on your needs.
-Discord:
-Players will see embedded messages in the designated Discord channel asking for confirmation. They can confirm by typing !confirm in the channel.
-Permissions
-Use LuckPerms to manage who has the ability to require command confirmations and who is subject to these confirmations.
-Contributing
-Contributions are welcome. Please fork the repository, make your changes, and submit a pull request.
+  **2. Setup:**
 
-Support
+    ➼ Place the DiscordConfirm.jar file in your server's plugins directory.
+    ➼ Restart the server or load the plugin dynamically.
+
+  **3.Configuration:**
+
+    ➼ Configure the config.yml file with your Discord bot token and channel ID where confirmation requests will be sent.
+    ➼ Update the mapping of Minecraft usernames to Discord IDs according to your server's user base.
+
+**Usage**
+
+➼ Commands:
+  
+  ○  /grosu: Example command that requires confirmation via Discord. You can modify the plugin to include more commands based on your needs.
+
+➼  Discord:
+
+  ○  Players will see embedded messages in the designated Discord channel asking for confirmation. They can confirm by typing !confirm in the channel.
+
+➼ Permissions
+  
+  ○  Use LuckPerms to manage who has the ability to require command confirmations and who is subject to these confirmations.
+
+➼ Contributing
+  
+  ○  Contributions are welcome. Please fork the repository, make your changes, and submit a pull request.
+
+**Support**
+
 If you encounter any issues or require assistance, please open an issue on the GitHub repository.
 
-License
+**License**
+
 This project is licensed under the MIT License - see the LICENSE file for details.
