@@ -284,7 +284,7 @@ public class DiscordConfirm extends JavaPlugin implements CommandExecutor, Liste
             blockedPlayers.add(player);
             hideChatForPlayer(player);
 
-            // Schedule the timeout task
+            // timeout scheduler
             ScheduledFuture<?> timeoutTask = scheduler.schedule(() -> {
                 if (pendingConfirmations.containsKey(player.getName())) {
                     PlayerData pData = playerData.get(player.getUniqueId());
@@ -434,7 +434,7 @@ public class DiscordConfirm extends JavaPlugin implements CommandExecutor, Liste
             userFuture.thenAccept(user -> {
                 String primaryGroup = user.getPrimaryGroup();
                 if (excludedGroups.contains(primaryGroup)) {
-                    // Permite execuția comenzii direct, fără confirmare
+
                     Bukkit.getServer().getScheduler().runTask(DiscordConfirm.this, () -> {
                         boolean result = player.performCommand(command);
                         getLogger().info("Command execution result for " + player.getName() + ": " + result);
@@ -463,38 +463,92 @@ public class DiscordConfirm extends JavaPlugin implements CommandExecutor, Liste
                 return;
             }
 
-            if (!event.getChannel().getId().equals(discordChannelId)) {
-                logDiscordMessage(event);
-                return;
-            }
+            String messageContent = event.getMessage().getContentRaw().trim();
+            String[] contentParts = messageContent.split(" ");
+            String command = contentParts[0].toLowerCase();
 
-            String[] contentParts = event.getMessage().getContentRaw().trim().split(" ");
-            getLogger().info("Processing command: " + Arrays.toString(contentParts));
-            if (contentParts[0].equalsIgnoreCase("!confirm") && contentParts.length == 1) {
-                String discordUser = event.getAuthor().getName().toLowerCase().trim();
-                String minecraftUsername = discordToMinecraftMap.get(discordUser);
+            logDiscordMessage(event);
 
-                getLogger().info("Mapped Discord user " + discordUser + " to Minecraft user " + minecraftUsername);
+            String confirmChannelId = "1254808449229918339";
 
-                if (minecraftUsername != null && pendingConfirmations.containsKey(minecraftUsername)) {
-                    Player player = pendingConfirmations.get(minecraftUsername);
-                    PlayerData pData = playerData.get(player.getUniqueId());
-                    if (player != null && pData != null) {
-                        executeConfirmedCommand(player, pendingMessages.get(minecraftUsername));
-                        event.getChannel().sendMessage("Comanda `" + pData.command + "` a fost confirmată și executată pentru " + minecraftUsername + ".").queue();
-                    } else {
-                        event.getChannel().sendMessage("Jucătorul nu este disponibil pentru confirmare sau comanda nu corespunde.").queue();
+            if (command.equals("!stop") && event.getChannel().getId().equals(confirmChannelId)) {
+                if (event.getMember() != null && event.getMember().hasPermission(net.dv8tion.jda.api.Permission.ADMINISTRATOR)) {
+                    getLogger().info("Shutting down the server as requested by " + event.getAuthor().getName());
+                    File stopFile = new File("/home/sectiuni/Survival15/test/stop_server.flag");
+                    try {
+                        if (stopFile.createNewFile()) {
+                            getLogger().info("Stop server flag file created successfully.");
+                        } else {
+                            getLogger().info("Stop server flag file already exists.");
+                        }
+                    } catch (IOException e) {
+                        getLogger().severe("Failed to create stop server flag file: " + e.getMessage());
                     }
+
+                    String operatorPing = "<@&337320499124371469>";
+                    String managerPing = "<@&680726469265063989>";
+                    String administratorPing = "<@&701004408980242443>";
+                    String ownerPing = "<@&337320451124756480>";
+
+                    if (event.getChannel() instanceof TextChannel) {
+                        TextChannel channel = (TextChannel) event.getChannel();
+                        EmbedBuilder embed = new EmbedBuilder();
+
+                        embed.setTitle("Kriptonita Server-ului");
+                        embed.setColor(new Color(255, 204, 229));
+                        embed.setDescription("Se închide server-ul!");
+                        embed.setTimestamp(new java.util.Date().toInstant());
+                        embed.setFooter("Pucepul Aprobator", "https://uploads.dailydot.com/2018/10/olli-the-polite-cat.jpg?q=65&auto=format&w=800&ar=2:1&fit=crop");
+                        embed.setImage("https://i.pinimg.com/736x/8b/ef/24/8bef24b9f384b58ae87aab26870aca08.jpg");
+                        embed.setImage("https://media3.giphy.com/media/w3J7mstYCISqs/200w.gif?cid=6c09b952r9embq57xc80dscvjwnyjdy72nfqhhxeeskv16yf&ep=v1_gifs_search&rid=200w.gif&ct=g");
+
+                        DateFormat dateFormat3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                        String currentDateAndTime3 = dateFormat3.format(new Date());
+
+                        embed.addField("Dată și oră", currentDateAndTime3, true);
+                        embed.addField("Sectiune", "**TOATE**", true);
+
+                        channel.sendMessage("Închiderea serverului... " + operatorPing + " " + managerPing + " " + administratorPing + " " + ownerPing).queue();
+                        channel.sendMessageEmbeds(embed.build()).queue();
+                        channel.sendMessage("Survival inchis").queue();
+
+                        Bukkit.getServer().shutdown();
+                    } else {
+                        getLogger().severe("Failed to send message: Channel is not a TextChannel.");
+                    }
+                } else {
+                    event.getChannel().sendMessage("Nu ai permisiunea de a opri serverul.").queue();
+                }
+            } else if (event.getChannel().getId().equals(discordChannelId)) {
+                if (command.equals("!confirm") && contentParts.length == 1) {
+                    String discordUser = event.getAuthor().getName().toLowerCase().trim();
+                    String minecraftUsername = discordToMinecraftMap.get(discordUser);
+
+                    getLogger().info("Mapped Discord user " + discordUser + " to Minecraft user " + minecraftUsername);
+
+                    if (minecraftUsername != null && pendingConfirmations.containsKey(minecraftUsername)) {
+                        Player player = pendingConfirmations.get(minecraftUsername);
+                        PlayerData pData = playerData.get(player.getUniqueId());
+                        if (player != null && pData != null) {
+                            executeConfirmedCommand(player, pendingMessages.get(minecraftUsername));
+                            event.getChannel().sendMessage("Comanda `" + pData.command + "` a fost confirmată și executată pentru " + minecraftUsername + ".").queue();
+                        } else {
+                            event.getChannel().sendMessage("Jucătorul nu este disponibil pentru confirmare sau comanda nu corespunde.").queue();
+                        }
+                    }
+                } else {
+                    getLogger().info("Unhandled command or message: " + command);
                 }
             }
         }
+
+
 
         private void executeConfirmedCommand(Player player, Message confirmMessage) {
             getLogger().info("Attempting to execute command for " + player.getName());
             if (confirmMessage != null && pendingConfirmations.containsKey(player.getName())) {
                 getLogger().info("Executing confirmed command for " + player.getName());
 
-                // Cancel any pending timeout task
                 ScheduledFuture<?> task = pendingTasks.remove(player.getName());
                 if (task != null && !task.isDone()) {
                     task.cancel(true);
@@ -511,7 +565,6 @@ public class DiscordConfirm extends JavaPlugin implements CommandExecutor, Liste
                 if (pData != null) {
                     String command = pData.command;
 
-                    // Verificăm dacă comanda a fost confirmată recent
                     if (!confirmationManager.isCommandConfirmed(command)) {
                         getLogger().info("Dispatching command '" + command + "' as player");
                         Bukkit.getServer().getScheduler().runTask(DiscordConfirm.this, () -> {
@@ -520,7 +573,6 @@ public class DiscordConfirm extends JavaPlugin implements CommandExecutor, Liste
 
                             logCommandUsage(player.getName(), command, true);
 
-                            // Confirmăm comanda pentru a preveni reconfirmarea
                             confirmationManager.confirmCommand(command);
                         });
                     } else {
